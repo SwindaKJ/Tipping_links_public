@@ -33,7 +33,7 @@ from tigramite.independence_tests import ParCorr, GPDC, CMIknn, CMIsymb
 def variable_selection(index_selection, exp_id="piControl", 
                        dir_path="/Users/3753808/Library/CloudStorage/" \
                                 "OneDrive-UniversiteitUtrecht/Code/" \
-                                "Tipping_links/CMIP6_indices/"):
+                                "Tipping_links_public/CMIP6_indices/"):
     """
     Select the variables to consider for the causal effect network.
 
@@ -232,7 +232,7 @@ def data_pcmci(data_var, index_selection, max_lag=10, alpha=0.1):
 
 def plot_pcmciresults(results, names, ind=1, save_fig=False, save_name=None, 
                       save_pcmci_fig="/Users/3753808/Library/CloudStorage/" \
-                      "OneDrive-UniversiteitUtrecht/Code/Tipping_links/" \
+                      "OneDrive-UniversiteitUtrecht/Code/Tipping_links_public/" \
                       "PCMCI_results/"):
     """
     Plot the graph and time series graph of the PCMCI result and save the plots
@@ -331,10 +331,12 @@ aggregation_time = 5
 exp_id = "piControl"
 # Directory where the variables are stored
 dir_path = '/Users/3753808/Library/CloudStorage/' \
-            'OneDrive-UniversiteitUtrecht/Code/Tipping_links/CMIP6_indices/'
+            'OneDrive-UniversiteitUtrecht/Code/Tipping_links_public/' \
+            'CMIP6_indices/'
 # Directory to save the figures
 save_pcmci_fig = '/Users/3753808/Library/CloudStorage/' \
-                 'OneDrive-UniversiteitUtrecht/Code/Tipping_links/PCMCI_results/'
+                 'OneDrive-UniversiteitUtrecht/Code/Tipping_links_public/' \
+                 'PCMCI_results/'
 
 
 ##### RUN #####
