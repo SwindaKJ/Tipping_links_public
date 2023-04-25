@@ -78,8 +78,8 @@ def variable_selection(index_selection, exp_id="piControl",
     return index_path, index_list, mod_list0, mod_list
 
 
-def data_prep(mod, index_path, index_list, mod_all_list, aggregation_time, 
-              time_data, time_ind=None):
+def data_prep(mod, index_selection, index_path, index_list, mod_all_list, 
+              aggregation_time, time_data, time_ind=None):
     """
     Load the data for each model (all variables)
 
@@ -140,6 +140,10 @@ def data_prep(mod, index_path, index_list, mod_all_list, aggregation_time,
             data_year = np.mean(np.array(data_month), axis=0)
         elif time_data == "month":
             data_year = np.array(data_xr[var_data])[time_ind[i]::12]
+        
+        # If index is ENSO, compute absolute value
+        if index_selection[i] == "nino34":
+            data_year = np.abs(data_year)
         
         # Moving average
         data_series = pd.Series(data_year)
@@ -374,8 +378,8 @@ for mod in mod_list:
                         repr(aggregation_time)
     # print(save_filename)
     # Preprocessing
-    data_var = data_prep(mod, index_path, index_list, mod_all_list, 
-                         aggregation_time, time_data, time_ind)
+    data_var = data_prep(mod, index_selection, index_path, index_list, 
+                         mod_all_list, aggregation_time, time_data, time_ind)
     # Check conditions
     break_flag = data_check(data_var, 98)
     if not break_flag:
