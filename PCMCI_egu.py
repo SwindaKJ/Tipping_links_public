@@ -204,6 +204,8 @@ def data_pcmci(data_var, index_selection, max_lag=10, alpha=0.1):
 
     Returns
     -------
+    dataframe : The dataframe created for the PCMCI algorihtm.
+    pcmci: The PCMCI algorihtm
     results : The PCMCI results.
     names : The names of the variables.
 
@@ -231,7 +233,40 @@ def data_pcmci(data_var, index_selection, max_lag=10, alpha=0.1):
     pcmci.verbosity = 1
     results = pcmci.run_pcmci(tau_max=max_lag, pc_alpha=None, alpha_level=alpha)
     
-    return results, names
+    return dataframe, pcmci, results, names
+
+def plot_correlation(pcmci, dataframe, names):
+    """
+    Plot the graph and time series graph of the PCMCI result and save the plots
+    if desired.
+
+    Parameters
+    ----------
+    pcmci : The PCMCI algorithm.
+    dataframe : The dataframe created for the PCMCI algorithm.
+    names : The names of the variables.
+
+    Returns
+    -------
+    None.
+
+    """
+    # Get correlations
+    correlations = pcmci.get_lagged_dependencies(tau_max=20, 
+                                                 val_only=True)['val_matrix']
+    tp.plot_lagfuncs(val_matrix=correlations, setup_args={'var_names':names, 
+                                                          'x_base':5,
+                                                          'y_base':.5}); 
+    plt.show()
+
+    # Scatter plot
+    scatter_lags = np.argmax(np.abs(correlations), axis=2)
+    tp.plot_scatterplots(dataframe=dataframe, 
+                          add_scatterplot_args={'scatter_lags':scatter_lags}); 
+    plt.show()
+    
+    return
+
 
 
 def plot_pcmciresults(results, names, ind=1, save_fig=False, save_name=None, 
@@ -311,15 +346,15 @@ index_names = ["amoc26",
                "tradewind_atl"]
 
 # Which variables to include
-index_set = [0,1,4]
+index_set = [0,4]
 index_selection = [index_names[i] for i in index_set]
 
 # Annual mean, season, or month: select one from ["year", "season", "month"]
-time_data = "season"
+time_data = "month"
 # Which month (numbered from January to December), or season (subset of months)
 # Can be different for each variable
-month = [5,0,11]
-season = [[5,6,7],[11,0,1],[8,9,10]]
+month = [11,11]
+season = [[11,0,1],[11,0,1]]
 # Set corresponding time_ind index
 if time_data == "year":
     time_ind = None
@@ -384,7 +419,9 @@ for mod in mod_list:
     break_flag = data_check(data_var, 98)
     if not break_flag:
         # Run PCMCI
-        results, names = data_pcmci(data_var, index_selection)
+        dataframe, pcmci, results, names = data_pcmci(data_var, index_selection)
+        # Correlation plots
+        plot_correlation(pcmci, dataframe, names)
         # Plot results
         plotres = plot_pcmciresults(results, names, 0, True, 
                                     save_subfolder+save_filename)
