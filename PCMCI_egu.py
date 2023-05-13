@@ -91,7 +91,7 @@ def data_prep(mod, index_selection, index_path, index_list, mod_all_list,
     index_list : A list of all the files in the variable directory (models).
     mod_all_list : A list of all available models for each of the variables.
     aggregation_time : The time over which to aggregate the data (years).
-    time_data : The type of data, annual, seasonal or monthly mean.
+    time_data : A list of the types of data, annual, seasonal or monthly mean.
     time_ind : Optional. Indicate the month(s) to consider for seasonal and 
         monthly data The default is None.
 
@@ -115,15 +115,15 @@ def data_prep(mod, index_selection, index_path, index_list, mod_all_list,
         # Get names of variables
         var_data = list(data_xr.keys())[0]
         
-        # The same for all variable, need to make variable dependent
-        if time_data == "year":
+        # Depending on the time indication for that variable
+        if time_data[i] == "year":
             # Moving average over 1 year
             year_series = pd.Series(np.array(data_xr[var_data]))
             year_window = year_series.rolling(12)
             year_movav = np.array(year_window.mean().tolist()[11::])
             # Set new data as moving averages
             data_year = year_movav[0::12]
-        elif time_data == "season":
+        elif time_data[i] == "season":
             data_month = [[] for i in range(len(time_ind[i]))]
             # Not crossing into the next year
             if not 0 in time_ind[i] and 12 in time_ind[i]:
@@ -138,7 +138,7 @@ def data_prep(mod, index_selection, index_path, index_list, mod_all_list,
                         data_month[j] = np.array(data_xr[var_data])[time_ind[i][j]:-11:12]
             # Average over the months belonging to the season of interest            
             data_year = np.mean(np.array(data_month), axis=0)
-        elif time_data == "month":
+        elif time_data[i] == "month":
             data_year = np.array(data_xr[var_data])[time_ind[i]::12]
         
         # If index is ENSO, compute absolute value
@@ -259,11 +259,11 @@ def plot_correlation(pcmci, dataframe, names):
                                                           'y_base':.5}); 
     plt.show()
 
-    # Scatter plot
-    scatter_lags = np.argmax(np.abs(correlations), axis=2)
-    tp.plot_scatterplots(dataframe=dataframe, 
-                          add_scatterplot_args={'scatter_lags':scatter_lags}); 
-    plt.show()
+    # # Scatter plot
+    # scatter_lags = np.argmax(np.abs(correlations), axis=2)
+    # tp.plot_scatterplots(dataframe=dataframe, 
+    #                       add_scatterplot_args={'scatter_lags':scatter_lags}); 
+    # plt.show()
     
     return
 
@@ -350,21 +350,24 @@ index_set = [0,4]
 index_selection = [index_names[i] for i in index_set]
 
 # Annual mean, season, or month: select one from ["year", "season", "month"]
-time_data = "month"
-# Which month (numbered from January to December), or season (subset of months)
-# Can be different for each variable
-month = [11,11]
-season = [[11,0,1],[11,0,1]]
-# Set corresponding time_ind index
-if time_data == "year":
-    time_ind = None
-elif time_data == "season":
-    time_ind = season
-elif time_data == "month":
-    time_ind = month
+##### TO-DO: Include correction when season crosses year #####
+time_data = ["year", "month"]
+time_ind  = [None, 11]
+
+# # Which month (numbered from January to December), or season (subset of months)
+# # Can be different for each variable
+# month = [11,11]
+# season = [[11,0,1],[11,0,1]]
+# # Set corresponding time_ind index
+# if time_data == "year":
+#     time_ind = None
+# elif time_data == "season":
+#     time_ind = season
+# elif time_data == "month":
+#     time_ind = month
 
 # Set the aggreation time (in years)
-aggregation_time = 5
+aggregation_time = 1
 
 # Set experiment id (only piCOntrol atm)
 exp_id = "piControl"
@@ -394,24 +397,39 @@ if not os.path.exists(save_pcmci_fig + save_subfolder):
 # print(save_subfolder)
 
 for mod in mod_list:
-    # print(mod)
-    # Set the name for saving the plots
-    if time_data == "year":
-        save_filename = mod+"_"+time_data+"_aggregation"+repr(aggregation_time)
-    else:
-        if time_data == "season":
-            name_time_ind = "".join(str(j) for j in time_ind[0])
-            for i in range(1,len(time_ind)):
-                name_time_one = "".join(str(j) for j in time_ind[i])
-                name_time_ind = name_time_ind+"-"+name_time_one
+    print(mod)
+    save_filename = mod
+    for i in range(len(time_data)):
+        save_filename = save_filename+"_"+index_selection[i]+"-"+time_data[i]
+        if time_data[i] == "year":
+            save_filename = save_filename
+        elif time_data[i] == "season":
+            name_time_ind = "".join(str(j) for j in time_ind[i])
+            save_filename = save_filename+name_time_ind
+        elif time_data[i] == "month":
+            save_filename = save_filename+str(time_ind[i])
+        
+        # if i < len(time_data)-1:
+        #     save_filename = save_filename+"_"+index_selection[i+1]+"_"
             
-        elif time_data == "month":
-            name_time_ind = str(time_ind[0])
-            for i in range(1,len(time_ind)):
-                name_time_ind = name_time_ind+"-"+str(time_ind[i])
-        save_filename = mod+"_"+time_data+"_"+name_time_ind+"_agg"+ \
-                        repr(aggregation_time)
-    # print(save_filename)
+    
+    # # Set the name for saving the plots
+    # if time_data == "year":
+    #     save_filename = mod+"_"+time_data+"_aggregation"+repr(aggregation_time)
+    # else:
+    #     if time_data == "season":
+    #         name_time_ind = "".join(str(j) for j in time_ind[0])
+    #         for i in range(1,len(time_ind)):
+    #             name_time_one = "".join(str(j) for j in time_ind[i])
+    #             name_time_ind = name_time_ind+"-"+name_time_one
+            
+    #     elif time_data == "month":
+    #         name_time_ind = str(time_ind[0])
+    #         for i in range(1,len(time_ind)):
+    #             name_time_ind = name_time_ind+"-"+str(time_ind[i])
+    #     save_filename = mod+"_"+time_data+"_"+name_time_ind+"_agg"+ \
+    #                     repr(aggregation_time)
+    print(save_filename)
     # Preprocessing
     data_var = data_prep(mod, index_selection, index_path, index_list, 
                          mod_all_list, aggregation_time, time_data, time_ind)
