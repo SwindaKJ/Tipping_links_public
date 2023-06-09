@@ -346,13 +346,13 @@ index_names = ["amoc26",
                "tradewind_atl"]
 
 # Which variables to include
-index_set = [0,4]
+index_set = [0,3,4,5]
 index_selection = [index_names[i] for i in index_set]
 
 # Annual mean, season, or month: select one from ["year", "season", "month"]
 ##### TO-DO: Include correction when season crosses year #####
-time_data = ["year", "month"]
-time_ind  = [None, 11]
+time_data = ["year", "month", "month", "month"]
+time_ind  = [None, 11, 11, 11]
 
 # # Which month (numbered from January to December), or season (subset of months)
 # # Can be different for each variable
@@ -367,7 +367,7 @@ time_ind  = [None, 11]
 #     time_ind = month
 
 # Set the aggreation time (in years)
-aggregation_time = 1
+aggregation_time = 5
 
 # Set experiment id (only piCOntrol atm)
 exp_id = "piControl"
@@ -437,11 +437,12 @@ for mod in mod_list:
     break_flag = data_check(data_var, 98)
     if not break_flag:
         # Run PCMCI
-        dataframe, pcmci, results, names = data_pcmci(data_var, index_selection)
+        dataframe, pcmci, results, names = data_pcmci(data_var, index_selection,
+                                                      max_lag=15)
         # Correlation plots
-        plot_correlation(pcmci, dataframe, names)
+        plot_correlation(pcmci, dataframe, ["amoc26", "TW_central", "TW_east", "TW_atl"])
         # Plot results
-        plotres = plot_pcmciresults(results, names, 0, True, 
+        plotres = plot_pcmciresults(results, names, 1, True, 
                                     save_subfolder+save_filename)
 
         
